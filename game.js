@@ -336,35 +336,34 @@ async function performPurchase(coinsAmt, starsCost) {
 
 // Also attach direct listeners for any ".buy-pack-button" elements (per requested snippet)
 // this will POST to the same Netlify function and include the Telegram user id
-document.querySelectorAll('.buy-pack-button, .buy-pack').forEach(button => {
-  button.addEventListener('click', async (e) => {
-    const amount = button.dataset.coins || button.dataset.amount;
-    const stars = button.dataset.stars || button.dataset.stars;
-    const functionUrl = `https://deft-pothos-3ce007.netlify.app/.netlify/functions/buy-coins`;
-    try {
-      const response = await fetch(functionUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'buy_coins',
-          amount: parseInt(amount, 10),
-          stars: parseInt(stars, 10),
-          userId: telegramUserId
-        })
-      });
-      const result = await response.json().catch(()=>null);
-      console.log('Server response:', result);
-      // If server agreed and returned success, update local coins
-      if (response.ok && result && result.success) {
-        store.coins += Number(amount || 0); saveStore(); renderShopItems();
-        safePlay(SFX.score);
-        alert(`Purchase successful — +${amount} coins`);
+try {
+  const webApp = window.Telegram.WebApp;
+  webApp.ready();
+  const userId = webApp.initDataUnsafe?.user?.id;
+  document.querySelectorAll('.buy-pack-button').forEach(button => {
+    button.addEventListener('click', async () => {
+      const amount = button.dataset.amount;
+      const stars = button.dataset.stars;
+      const functionUrl = `https://deft-pothos-3ce007.netlify.app/.netlify/functions/buy-coins`;
+      try {
+        const response = await fetch(functionUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'buy_coins',
+            amount: parseInt(amount, 10),
+            stars: parseInt(stars, 10),
+            userId: userId
+          })
+        });
+        const result = await response.json().catch(()=>null);
+        console.log('Server response:', result);
+      } catch (error) {
+        console.error('Error contacting the serverless function:', error);
       }
-    } catch (error) {
-      console.error('Error contacting the serverless function:', error);
-    }
+    });
   });
-});
+} catch (_) { /* Telegram not available — skip attaching telegram purchase handlers */ }
 
 function start() {
   // hide menus, reset world and switch to playing mode
