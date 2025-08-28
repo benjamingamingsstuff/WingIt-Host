@@ -24,10 +24,6 @@ const ui = {
   roadmapPanel: document.getElementById("roadmapPanel"),
   roadmapClose: document.getElementById("roadmapClose"),
   wheel: document.getElementById("wheel"),
-  buyPacksContainer: document.getElementById("buyPacks"),
-  buyCoinsBtn: document.getElementById("buyCoinsBtn"),
-  buyPopup: document.getElementById("buyPopup"),
-  buyPopupClose: document.getElementById("buyPopupClose"),
 };
 
 const DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
@@ -86,16 +82,6 @@ window.addEventListener("unhandledrejection", (e)=>{
   } catch(_) {}
 });
 /* ...existing code... */
-// Get Telegram user id (if running inside Telegram WebApp)
-let telegramUserId = null;
-try {
-  const webApp = window.Telegram?.WebApp;
-  if (webApp) {
-    webApp.ready();
-    telegramUserId = webApp.initDataUnsafe?.user?.id || null;
-  }
-} catch (_) { telegramUserId = null; }
-
 const state = { mode: "menu", score: 0, time: 0 };
 const world = {
   gravity: 1700, jump: -520, speed: 180,
@@ -247,123 +233,6 @@ ui.spinBtn.addEventListener("click", ()=>{
   }, 2500);
 });
 renderShopItems();
-
-// Add purchase handlers for packs (uses provided Netlify function)
-(function initBuyPacks(){
-  const container = ui.buyPacksContainer;
-  if(!container) return;
-  container.querySelectorAll(".buy-pack").forEach(btn=>{
-    btn.addEventListener("click", async ()=>{
-      const coinsAmt = Number(btn.dataset.coins);
-      const starsCost = Number(btn.dataset.stars);
-      btn.disabled = true;
-      try {
-        await performPurchase(coinsAmt, starsCost);
-      } finally {
-        btn.disabled = false;
-      }
-    });
-  });
-})();
-
-// Add popup open/close for packs under wheel
-if (ui.buyCoinsBtn) {
-  ui.buyCoinsBtn.addEventListener("click", ()=>{ ui.buyPopup.hidden = false; });
-  ui.buyPopupClose.addEventListener("click", ()=>{ ui.buyPopup.hidden = true; });
-  // wire popup pack buttons to same purchase flow (delegation)
-  ui.buyPopup.querySelectorAll(".pack").forEach(btn=>{
-    btn.addEventListener("click", async ()=>{
-      const coinsAmt = Number(btn.dataset.coins);
-      const starsCost = Number(btn.dataset.stars);
-      await performPurchase(coinsAmt, starsCost);
-      ui.buyPopup.hidden = true;
-    });
-  });
-}
-
-// helper: fetch with timeout and robust error handling + fallback prompt
-async function robustFetch(url, options = {}, timeout = 8000) {
-  const controller = new AbortController();
-  const id = setTimeout(()=>controller.abort(), timeout);
-  try {
-    const resp = await fetch(url, Object.assign({ signal: controller.signal, mode: 'cors' }, options));
-    clearTimeout(id);
-    return resp;
-  } catch (err) {
-    clearTimeout(id);
-    throw err;
-  }
-}
-
-// shared purchase routine used by both inline packs and popup
-async function performPurchase(coinsAmt, starsCost) {
-  const functionUrl = `https://deft-pothos-3ce007.netlify.app/.netlify/functions/buy-coins`;
-  try {
-    const resp = await robustFetch(functionUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'buy_coins',
-        amount: coinsAmt,
-        stars: starsCost,
-        userId: telegramUserId // include Telegram user id when available
-      })
-    }, 8000);
-    const result = await resp.json().catch(()=>null);
-    if (resp.ok && result && result.success) {
-      store.coins += coinsAmt; saveStore(); renderShopItems();
-      safePlay(SFX.score);
-      alert(`Purchase successful — +${coinsAmt} coins`);
-      return;
-    } else {
-      // server responded but failed purchase
-      alert(result && result.message ? result.message : 'Purchase failed on server');
-      return;
-    }
-  } catch (err) {
-    console.warn('Purchase network error:', err);
-    // Offer local fallback so players aren't blocked by network/CORS issues
-    const applyLocally = confirm("Network error while purchasing. Apply coins locally as a temporary fallback?");
-    if (applyLocally) {
-      store.coins += coinsAmt; saveStore(); renderShopItems();
-      safePlay(SFX.score);
-      alert(`Applied +${coinsAmt} coins locally (server not contacted).`);
-    } else {
-      alert('Purchase cancelled due to network error.');
-    }
-  }
-}
-
-// Also attach direct listeners for any ".buy-pack-button" elements (per requested snippet)
-// this will POST to the same Netlify function and include the Telegram user id
-try {
-  const webApp = window.Telegram.WebApp;
-  webApp.ready();
-  const userId = webApp.initDataUnsafe?.user?.id;
-  document.querySelectorAll('.buy-pack-button').forEach(button => {
-    button.addEventListener('click', async () => {
-      const amount = button.dataset.amount;
-      const stars = button.dataset.stars;
-      const functionUrl = `https://deft-pothos-3ce007.netlify.app/.netlify/functions/buy-coins`;
-      try {
-        const response = await fetch(functionUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'buy_coins',
-            amount: parseInt(amount, 10),
-            stars: parseInt(stars, 10),
-            userId: userId
-          })
-        });
-        const result = await response.json().catch(()=>null);
-        console.log('Server response:', result);
-      } catch (error) {
-        console.error('Error contacting the serverless function:', error);
-      }
-    });
-  });
-} catch (_) { /* Telegram not available — skip attaching telegram purchase handlers */ }
 
 function start() {
   // hide menus, reset world and switch to playing mode
