@@ -2,6 +2,7 @@ const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
 exports.handler = async (event, context) => {
     try {
+        // Fix for "Unexpected end of JSON input" error
         if (!event.body) {
             return {
                 statusCode: 400,
@@ -12,6 +13,7 @@ exports.handler = async (event, context) => {
         const body = JSON.parse(event.body);
         const { amount, stars, userId } = body;
 
+        // Basic check to ensure required data is present
         if (!amount || !stars || !userId) {
             return {
                 statusCode: 400,
@@ -56,7 +58,7 @@ exports.handler = async (event, context) => {
             };
         }
     } catch (error) {
-        console.error('An error occurred in the serverless function:', error);
+        console.error('An unexpected error occurred in the serverless function:', error);
         return {
             statusCode: 500,
             body: JSON.stringify({ message: "An unexpected error occurred." }),
