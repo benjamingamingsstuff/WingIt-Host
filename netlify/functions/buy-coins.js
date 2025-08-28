@@ -2,6 +2,13 @@ const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
 exports.handler = async (event, context) => {
     try {
+        if (!event.body) {
+            return {
+                statusCode: 400,
+                body: JSON.stringify({ message: "Request body is empty." }),
+            };
+        }
+
         const body = JSON.parse(event.body);
         const { amount, stars, userId } = body;
 
