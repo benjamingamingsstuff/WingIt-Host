@@ -19,10 +19,10 @@ exports.handler = async (event, context) => {
             title: `Purchase ${amount} Coins`,
             description: `Get ${amount} in-game coins for your character.`,
             payload: `wing_it_purchase_${userId}_${Date.now()}`,
-            provider_token: "", // Must be an empty string for Telegram Stars
+            provider_token: "", // This must be an empty string for Telegram Stars
             currency: "XTR", // "XTR" is the code for Telegram Stars
             prices: [{ label: `${amount} Coins`, amount: stars }],
-            start_parameter: `start-param`, // Required, can be a simple string
+            start_parameter: `start-param`,
         };
 
         const response = await fetch(telegramApiUrl, {
