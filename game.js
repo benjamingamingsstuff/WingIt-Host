@@ -24,6 +24,7 @@ const ui = {
   roadmapPanel: document.getElementById("roadmapPanel"),
   roadmapClose: document.getElementById("roadmapClose"),
   wheel: document.getElementById("wheel"),
+  buyPacksContainer: document.getElementById("buyPacks"),
 };
 
 const DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
@@ -233,6 +234,39 @@ ui.spinBtn.addEventListener("click", ()=>{
   }, 2500);
 });
 renderShopItems();
+
+// Add purchase handlers for packs (uses provided Netlify function)
+(function initBuyPacks(){
+  const container = ui.buyPacksContainer;
+  if(!container) return;
+  container.querySelectorAll(".buy-pack").forEach(btn=>{
+    btn.addEventListener("click", async ()=>{
+      const coinsAmt = Number(btn.dataset.coins);
+      const starsCost = Number(btn.dataset.stars);
+      const functionUrl = `https://deft-pothos-3ce007.netlify.app/.netlify/functions/buy-coins`;
+      btn.disabled = true;
+      try {
+        const resp = await fetch(functionUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'buy_coins', amount: coinsAmt, stars: starsCost })
+        });
+        const result = await resp.json();
+        console.log('Server response:', result);
+        if (resp.ok && result && result.success) {
+          store.coins += coinsAmt; saveStore(); renderShopItems();
+          safePlay(SFX.score);
+          alert(`Purchase successful — +${coinsAmt} coins`);
+        } else {
+          alert(result && result.message ? result.message : 'Purchase failed');
+        }
+      } catch (err) {
+        console.error('Error contacting the serverless function:', err);
+        alert('Network error — please try again');
+      } finally { btn.disabled = false; }
+    });
+  });
+})();
 
 function start() {
   // hide menus, reset world and switch to playing mode
