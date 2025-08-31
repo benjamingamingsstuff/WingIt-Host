@@ -246,7 +246,7 @@ async function buyCoins(tonAmount, userId) {
   if (button) button.disabled = true;
   const data = {
     price_amount: tonAmount,
-    price_currency: 'ton',
+    price_currency: 'usd', // must be a fiat currency like 'usd'
     pay_currency: 'ton',
     order_id: userId + '_' + Date.now(),
     order_description: 'In-game coins',
