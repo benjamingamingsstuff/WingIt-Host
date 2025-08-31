@@ -1,5 +1,9 @@
 {
   "name": "Wing-It!-functions",
   "version": "1.0.0",
-  "description": "Functions for the Wing It! Web3 Game"
+  "description": "Functions for the Wing It! Web3 Game",
+  "dependencies": {
+    "node-fetch": "^3.3.2",
+    "crypto": "^1.0.1"
+  }
 }
