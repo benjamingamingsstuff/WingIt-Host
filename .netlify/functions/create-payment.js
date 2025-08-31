@@ -16,7 +16,7 @@ exports.handler = async (event) => {
     const requestBody = {
       price_amount: data.price_amount,
       price_currency: data.price_currency,
-      pay_currency: 'ton', // Hardcode TON to ensure it's sent correctly
+      pay_currency: data.pay_currency,
       order_id: data.order_id,
       order_description: data.order_description,
       ipn_callback_url: data.ipn_callback_url,
@@ -34,12 +34,12 @@ exports.handler = async (event) => {
 
     const paymentData = await response.json();
 
-    // Log the full response from NOWPayments for debugging
-    console.log('NOWPayments API Response:', JSON.stringify(paymentData, null, 2));
-
     if (paymentData.payment_id) {
         paymentData.invoice_url = `https://nowpayments.io/payment/?iid=${paymentData.payment_id}`;
     }
+
+    // Log the final URL before returning it to the frontend
+    console.log('Final invoice URL:', paymentData.invoice_url);
 
     return {
       statusCode: response.status,
