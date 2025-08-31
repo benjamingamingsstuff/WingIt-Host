@@ -12,8 +12,8 @@ exports.handler = async (event) => {
 
   const data = JSON.parse(event.body);
 
-  // THIS IS THE NEW LINE
-  console.log('Incoming data from game.js:', data);
+  // This is the new line we need to check
+  console.log('Data received from game.js:', data);
 
   try {
     const response = await fetch(NOWPAYMENTS_API_URL, {
