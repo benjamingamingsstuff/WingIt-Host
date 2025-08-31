@@ -234,6 +234,46 @@ ui.spinBtn.addEventListener("click", ()=>{
 });
 renderShopItems();
 
+// NOWPayments integration for TON purchases (opens invoice in new tab)
+// Replace with standard snippet and use provided API key + IPN callback
+const NOWPAYMENTS_API_KEY = 'F1TH99H-B5FMYMP-P0TQZQB-ZRQ77AK';
+const NOWPAYMENTS_API_URL = 'https://api.nowpayments.io/v1/payment';
+const IPN_CALLBACK = 'https://deft-pothos-3ce007.netlify.app/.netlify/functions/verify-payment';
+
+async function buyCoins(tonAmount, userId) {
+  const data = {
+    price_amount: tonAmount,
+    price_currency: 'ton',
+    pay_currency: 'ton',
+    order_id: userId + '_' + Date.now(),
+    order_description: 'In-game coins',
+    ipn_callback_url: IPN_CALLBACK
+  };
+  try {
+    const response = await fetch(NOWPAYMENTS_API_URL, {
+      method: 'POST',
+      headers: {
+        'x-api-key': NOWPAYMENTS_API_KEY,
+        'Content-Type': 'application/json'
+      },
+    });
+    const paymentData = await response.json();
+    if (paymentData && paymentData.invoice_url) window.open(paymentData.invoice_url, '_blank');
+    else throw new Error('Invalid payment response');
+  } catch (error) {
+    console.error('NOWPayments error:', error);
+    alert('Could not start payment. Please try again.');
+  }
+}
+
+// Wire the Buy Coins button (buy 1,000 coins for a small TON amount example)
+document.addEventListener('click', (e) => {
+  if (e.target && e.target.id === 'buy-coins-button') {
+    // Replace 'player123' with real player ID when available. 0.01 TON is example amount.
+    buyCoins(0.01, 'player123');
+  }
+});
+
 function start() {
   // hide menus, reset world and switch to playing mode
   ui.menu.hidden = true;
