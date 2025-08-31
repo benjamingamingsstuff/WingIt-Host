@@ -2,8 +2,6 @@
 
 const fetch = require('node-fetch').default;
 
-
-// This key MUST be stored as a Netlify environment variable
 const NOWPAYMENTS_API_KEY = process.env.NOWPAYMENTS_API_KEY;
 const NOWPAYMENTS_API_URL = 'https://api.nowpayments.io/v1/payment';
 
@@ -13,6 +11,9 @@ exports.handler = async (event) => {
   }
 
   const data = JSON.parse(event.body);
+
+  // THIS IS THE NEW LINE
+  console.log('Incoming data from game.js:', data);
 
   try {
     const response = await fetch(NOWPAYMENTS_API_URL, {
@@ -26,7 +27,6 @@ exports.handler = async (event) => {
 
     const paymentData = await response.json();
 
-    // THIS IS THE NEW LINE
     console.log('NOWPayments API Response:', paymentData);
 
     return {
@@ -34,7 +34,6 @@ exports.handler = async (event) => {
       body: JSON.stringify(paymentData)
     };
   } catch (error) {
-    // THIS IS THE OTHER NEW LINE
     console.error('Fetch error:', error);
     return {
       statusCode: 500,
