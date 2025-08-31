@@ -276,7 +276,7 @@ async function buyCoins(tonAmount, userId) {
 
 document.addEventListener('DOMContentLoaded', () => {
   const button = document.getElementById('buy-coins-button');
-  if (button) button.addEventListener('click', () => buyCoins(0.3153, 'player123'));
+  if (button) button.addEventListener('click', () => buyCoins(0.31528662, 'player123'));
 });
 
 function start() {
