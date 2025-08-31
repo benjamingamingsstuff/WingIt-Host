@@ -25,11 +25,16 @@ exports.handler = async (event) => {
 
     const paymentData = await response.json();
 
+    // THIS IS THE NEW LINE
+    console.log('NOWPayments API Response:', paymentData);
+
     return {
       statusCode: response.status,
       body: JSON.stringify(paymentData)
     };
   } catch (error) {
+    // THIS IS THE OTHER NEW LINE
+    console.error('Fetch error:', error);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: 'Failed to create payment' })
