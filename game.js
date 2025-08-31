@@ -250,7 +250,8 @@ async function buyCoins(tonAmount, userId) {
     pay_currency: 'ton',
     order_id: userId + '_' + Date.now(),
     order_description: 'In-game coins',
-    ipn_callback_url: ipnCallbackURL
+    ipn_callback_url: 'https://deft-pothos-3ce007.netlify.app/.netlify/functions/verify-payment',
+    success_url: 'https://deft-pothos-3ce007.netlify.app'
   };
   try {
     const response = await fetch(CREATE_PAYMENT_URL, {
