@@ -256,21 +256,40 @@ async function buyCoins(tonAmount, userId) {
         'x-api-key': NOWPAYMENTS_API_KEY,
         'Content-Type': 'application/json'
       },
+      body: JSON.stringify(data)
     });
-    const paymentData = await response.json();
-    if (paymentData && paymentData.invoice_url) window.open(paymentData.invoice_url, '_blank');
-    else throw new Error('Invalid payment response');
+    const text = await response.text();
+    let paymentData = null;
+    try { paymentData = text ? JSON.parse(text) : null; } catch(_) { paymentData = { raw: text }; }
+    if (!response.ok) {
+      const msg = paymentData && (paymentData.error || paymentData.message) ? (paymentData.error || paymentData.message) : (paymentData && paymentData.raw ? String(paymentData.raw).slice(0,500) : 'No details');
+      const full = `NOWPayments error: HTTP ${response.status} ${response.statusText} — ${msg}`;
+      console.error(full, paymentData);
+      alert(full);
+      return;
+    }
+    if (paymentData && paymentData.invoice_url) {
+      // Redirect the current page to the invoice URL (useful on mobile & required)
+      window.location.href = paymentData.invoice_url;
+    } else {
+      const detail = paymentData && (paymentData.error || paymentData.message) ? (paymentData.error || paymentData.message) : JSON.stringify(paymentData);
+      const full = `NOWPayments invalid response: ${detail}`;
+      console.error(full, paymentData);
+      alert(full);
+    }
   } catch (error) {
-    console.error('NOWPayments error:', error);
-    alert('Could not start payment. Please try again.');
+    const msg = (error && (error.message || String(error))) || 'Unknown error';
+    const full = `NOWPayments request failed: ${msg}`;
+    console.error(full, error);
+    alert(full);
   }
 }
 
 // Wire the Buy Coins button (buy 1,000 coins for a small TON amount example)
 document.addEventListener('click', (e) => {
   if (e.target && e.target.id === 'buy-coins-button') {
-    // Replace 'player123' with real player ID when available. 0.01 TON is example amount.
-    buyCoins(0.01, 'player123');
+    // Replace 'player123' with real player ID when available. 0.3153 TON is the required amount.
+    buyCoins(0.3153, 'player123');
   }
 });
 
