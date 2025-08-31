@@ -16,7 +16,7 @@ exports.handler = async (event) => {
     const requestBody = {
       price_amount: data.price_amount,
       price_currency: data.price_currency,
-      pay_currency: data.pay_currency,
+      pay_currency: data.pay_currency, // Explicitly included
       order_id: data.order_id,
       order_description: data.order_description,
       ipn_callback_url: data.ipn_callback_url,
