@@ -167,7 +167,68 @@ function renderShopItems() {
   // disable spin button if on cooldown
   if (!spinAvailable()) { ui.spinBtn.disabled = true; ui.spinBtn.classList.add("spin-disabled"); }
   else { ui.spinBtn.disabled = false; ui.spinBtn.classList.remove("spin-disabled"); }
+  addCryptoCoinPackButton();
 }
+// add payment endpoint constant for Crypto Pay integration
+const CREATE_PAYMENT_URL = "https://api.cryptobot.example/create_payment"; // <- replace with real endpoint
+
+// YOU SHOULD REPLACE YOUR OLD buyCoins FUNCTION WITH THIS NEW ONE
+async function buyCoins() {
+    const data = {
+        price_amount: 0.99,
+        price_currency: "usd",
+        pay_currency: "ton",
+        order_id: `player123_${Date.now()}`,
+        order_description: "In-game coins",
+        // The Crypto Pay API does not use these parameters, but we can leave them for consistency
+        ipn_callback_url: "https://your-netlify-app-name.netlify.app/.netlify/functions/verify-payment",
+        success_url: "https://your-netlify-app-name.netlify.app/success.html",
+    };
+
+    try {
+        const response = await fetch(CREATE_PAYMENT_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            alert(`HTTP Error: ${response.status} - ${errorText}`);
+            return;
+        }
+
+        const paymentData = await response.json();
+
+        // The Crypto Pay backend will return the URL here
+        window.location.href = paymentData.invoice_url;
+
+    } catch (error) {
+        alert('Could not connect to the payment gateway.');
+    }
+}
+
+// inject a crypto coin-pack purchase option into the shop UI
+function addCryptoCoinPackButton() {
+  // avoid duplicate
+  if (document.getElementById("buy1000CryptoBtn")) return;
+  const pack = document.createElement("div");
+  pack.className = "shop-item";
+  pack.style.minWidth = "120px";
+  pack.innerHTML = `<div style="font-weight:700">1000 Coins</div><div style="display:flex;align-items:center;gap:6px;"><span>$0.99</span><img src="/Coin.png" alt="coin" style="width:18px;height:18px;image-rendering:pixelated"></div>`;
+  const btn = document.createElement("button");
+  btn.id = "buy1000CryptoBtn";
+  btn.textContent = "Buy with Crypto";
+  btn.addEventListener("click", buyCoins);
+  pack.appendChild(btn);
+  // place the pack into the left-side coin actions area so it appears to the left of the wheel
+  const area = document.getElementById("coinPurchaseArea");
+  if (area) area.appendChild(pack);
+  else ui.shopItems.appendChild(pack); // fallback
+}
+
 function buyItem(item) {
   if (store.coins >= item.price) {
     store.coins -= item.price; store.owned.add(item.id); saveStore(); renderShopItems(); renderBirds();
@@ -233,43 +294,6 @@ ui.spinBtn.addEventListener("click", ()=>{
   }, 2500);
 });
 renderShopItems();
-
-// Replace previous NOWPayments buyCoins + listener with new TON-based function
-async function buyCoins(userId) {
-    const CREATE_PAYMENT_URL = 'https://deft-pothos-3ce007.netlify.app/.netlify/functions/create-payment';
-    const data = {
-        // The price in USD that the player is paying. This is the correct amount to use.
-        price_amount: 0.99,
-        price_currency: 'usd',
-        // This is the currency the user will pay with.
-        pay_currency: 'ton',
-        order_id: userId + '_' + Date.now(),
-        order_description: 'In-game coins',
-        ipn_callback_url: 'https://deft-pothos-3ce007.netlify.app/.netlify/functions/verify-payment',
-        success_url: 'https://deft-pothos-3ce007.netlify.app'
-    };
-    try {
-        const response = await fetch(CREATE_PAYMENT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
-        if (!response.ok) {
-            const errorText = await response.text();
-            alert(`HTTP Error: ${response.status} - ${errorText}`);
-            return;
-        }
-        const paymentData = await response.json();
-        window.location.href = paymentData.invoice_url;
-    } catch (error) {
-        alert('Could not connect to the payment gateway.');
-    }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  const button = document.getElementById('buy-coins-button');
-  if (button) button.addEventListener('click', () => buyCoins('player123'));
-});
 
 function start() {
   // hide menus, reset world and switch to playing mode
