@@ -175,26 +175,41 @@ const CREATE_PAYMENT_URL = "https://your-netlify-app-name.netlify.app/.netlify/f
 
 // Replace old buyCoins implementation with new one that posts to the Netlify function
 async function buyCoins() {
-    const data = {
-        price_amount: 0.99,
-        price_currency: "usd",
-        pay_currency: "ton",
-        order_id: `player123_${Date.now()}`,
-        order_description: "In-game coins",
-        ipn_callback_url: "https://your-netlify-app-name.netlify.app/.netlify/functions/verify-payment",
-        success_url: "https://your-netlify-app-name.netlify.app/success.html",
-    };
+    // This will alert if the function is being called
+    alert('1. buyCoins function triggered');
+
     try {
+        // This will alert if the fetch request is being made
+        alert('2. Sending fetch request...');
+
         const response = await fetch(CREATE_PAYMENT_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify({
+                price_amount: 0.99,
+                order_description: "In-game coins",
+                order_id: `player123_${Date.now()}`
+            })
         });
-        if (!response.ok) { const errorText = await response.text(); alert(`HTTP Error: ${response.status} - ${errorText}`); return; }
+
+        // This will alert if the fetch request got a response
+        alert(`3. Response status: ${response.status}`);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            alert(`4. HTTP Error: ${response.status} - ${errorText}`);
+            return;
+        }
+
         const paymentData = await response.json();
+
+        // This will alert if the payment URL was received
+        alert('5. Redirecting to payment URL...');
         window.location.href = paymentData.invoice_url;
+
     } catch (error) {
-        alert('Could not connect to the payment gateway.');
+        // This will alert if the fetch request failed completely
+        alert('CATCH: Could not connect to the payment gateway.');
     }
 }
 
