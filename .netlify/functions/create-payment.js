@@ -1,6 +1,14 @@
 // File: .netlify/functions/create-payment.js
 
-const fetch = require('node-fetch');
+// File: .netlify/functions/create-payment.js
+
+import fetch from 'node-fetch';
+
+const CRYPTO_PAY_API_KEY = process.env.CRYPTO_PAY_API_KEY;
+const CRYPTO_PAY_API_URL = 'https://pay.crypt.bot/api/createInvoice';
+
+// ... the rest of the code is the same ...
+
 
 const CRYPTO_PAY_API_KEY = process.env.CRYPTO_PAY_API_KEY;
 const CRYPTO_PAY_API_URL = 'https://pay.crypt.bot/api/createInvoice';
