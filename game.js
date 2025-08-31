@@ -236,11 +236,12 @@ renderShopItems();
 
 // Replace previous NOWPayments buyCoins + listener with new TON-based function
 async function buyCoins(userId) {
-    const tonAmount = 0.31528662;
     const CREATE_PAYMENT_URL = 'https://deft-pothos-3ce007.netlify.app/.netlify/functions/create-payment';
     const data = {
-        price_amount: tonAmount,
-        price_currency: 'ton',
+        // The price in USD that the player is paying. This is the correct amount to use.
+        price_amount: 0.99,
+        price_currency: 'usd',
+        // This is the currency the user will pay with.
         pay_currency: 'ton',
         order_id: userId + '_' + Date.now(),
         order_description: 'In-game coins',
