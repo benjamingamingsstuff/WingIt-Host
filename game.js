@@ -234,49 +234,40 @@ ui.spinBtn.addEventListener("click", ()=>{
 });
 renderShopItems();
 
-// NOWPayments integration (final): uses provided API key & IPN URL
-const CREATE_PAYMENT_URL = 'https://deft-pothos-3ce007.netlify.app/.netlify/functions/create-payment';
-const ipnCallbackURL = 'https://deft-pothos-3ce007.netlify.app/.netlify/functions/verify-payment';
-let isProcessing = false; // prevent double submissions
-
-async function buyCoins(tonAmount, userId) {
-  if (isProcessing) return;
-  isProcessing = true;
-  const button = document.getElementById('buy-coins-button');
-  if (button) button.disabled = true;
-  const data = {
-    price_amount: tonAmount,
-    price_currency: 'usd', // must be a fiat currency like 'usd'
-    pay_currency: 'ton',
-    order_id: userId + '_' + Date.now(),
-    order_description: 'In-game coins',
-    ipn_callback_url: 'https://deft-pothos-3ce007.netlify.app/.netlify/functions/verify-payment',
-    success_url: 'https://deft-pothos-3ce007.netlify.app'
-  };
-  try {
-    const response = await fetch(CREATE_PAYMENT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    if (!response.ok) {
-      const errorText = await response.text();
-      alert(`HTTP Error: ${response.status} - ${errorText}`);
-      return;
+// Replace previous NOWPayments buyCoins + listener with new TON-based function
+async function buyCoins(userId) {
+    const tonAmount = 0.31528662;
+    const CREATE_PAYMENT_URL = 'https://deft-pothos-3ce007.netlify.app/.netlify/functions/create-payment';
+    const data = {
+        price_amount: tonAmount,
+        price_currency: 'ton',
+        pay_currency: 'ton',
+        order_id: userId + '_' + Date.now(),
+        order_description: 'In-game coins',
+        ipn_callback_url: 'https://deft-pothos-3ce007.netlify.app/.netlify/functions/verify-payment',
+        success_url: 'https://deft-pothos-3ce007.netlify.app'
+    };
+    try {
+        const response = await fetch(CREATE_PAYMENT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) {
+            const errorText = await response.text();
+            alert(`HTTP Error: ${response.status} - ${errorText}`);
+            return;
+        }
+        const paymentData = await response.json();
+        window.location.href = paymentData.invoice_url;
+    } catch (error) {
+        alert('Could not connect to the payment gateway.');
     }
-    const paymentData = await response.json();
-    window.location.href = paymentData.invoice_url;
-  } catch (err) {
-    alert('Could not connect to the payment gateway.');
-  } finally {
-    if (button) button.disabled = false;
-    isProcessing = false;
-  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   const button = document.getElementById('buy-coins-button');
-  if (button) button.addEventListener('click', () => buyCoins(0.31528662, 'player123'));
+  if (button) button.addEventListener('click', () => buyCoins('player123'));
 });
 
 function start() {
