@@ -1,14 +1,6 @@
 // File: .netlify/functions/create-payment.js
 
-// File: .netlify/functions/create-payment.js
-
 import fetch from 'node-fetch';
-
-const CRYPTO_PAY_API_KEY = process.env.CRYPTO_PAY_API_KEY;
-const CRYPTO_PAY_API_URL = 'https://pay.crypt.bot/api/createInvoice';
-
-// ... the rest of the code is the same ...
-
 
 const CRYPTO_PAY_API_KEY = process.env.CRYPTO_PAY_API_KEY;
 const CRYPTO_PAY_API_URL = 'https://pay.crypt.bot/api/createInvoice';
@@ -19,14 +11,14 @@ exports.handler = async (event) => {
   }
 
   const data = JSON.parse(event.body);
-  
-  // This line should now output to your logs
+
+  // This should now output to your logs
   console.log('API Key from environment variable:', CRYPTO_PAY_API_KEY);
 
   try {
     const requestBody = {
       asset: 'TON',
-      amount: data.price_amount.toString(), 
+      amount: data.price_amount.toString(),
       description: data.order_description,
       payload: data.order_id,
     };
@@ -43,15 +35,15 @@ exports.handler = async (event) => {
     const paymentData = await response.json();
 
     if (paymentData.ok && paymentData.result) {
-        return {
-            statusCode: 200,
-            body: JSON.stringify({ invoice_url: paymentData.result.pay_url })
-        };
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ invoice_url: paymentData.result.pay_url })
+      };
     } else {
-        return {
-            statusCode: 400,
-            body: JSON.stringify({ error: 'Failed to create payment', details: paymentData })
-        };
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'Failed to create payment', details: paymentData })
+      };
     }
   } catch (error) {
     return {
