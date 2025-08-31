@@ -1,9 +1,10 @@
-// File: .netlify/functions/create-payment.js
+// // File: .netlify/functions/create-payment.js
 
 const fetch = require('node-fetch').default;
 
-const NOWPAYMENTS_API_KEY = process.env.NOWPAYMENTS_API_KEY;
-const NOWPAYMENTS_API_URL = 'https://api.nowpayments.io/v1/payment';
+// Get your API token from @CryptoBot from Netlify's environment variables
+const CRYPTO_PAY_API_KEY = process.env.CRYPTO_PAY_API_KEY;
+const CRYPTO_PAY_API_URL = 'https://pay.crypt.bot/api/createInvoice';
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
@@ -13,40 +14,39 @@ exports.handler = async (event) => {
   const data = JSON.parse(event.body);
 
   try {
-    const payload = {
-      price_amount: data.price_amount,
-      price_currency: data.price_currency,
-      pay_currency: data.pay_currency,
-      order_id: data.order_id,
-      order_description: data.order_description,
-      ipn_callback_url: data.ipn_callback_url,
-      success_url: data.success_url,
-      is_fixed_rate: false,
+    const requestBody = {
+      asset: 'TON',
+      amount: data.price_amount, 
+      description: data.order_description,
+      payload: data.order_id,
     };
 
-    const response = await fetch(NOWPAYMENTS_API_URL, {
+    const response = await fetch(CRYPTO_PAY_API_URL, {
       method: 'POST',
       headers: {
-        'x-api-key': NOWPAYMENTS_API_KEY,
+        'Crypto-Pay-API-Token': CRYPTO_PAY_API_KEY,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(requestBody)
     });
 
     const paymentData = await response.json();
 
-    if (paymentData.payment_id) {
-        paymentData.invoice_url = `https://nowpayments.io/payment/?iid=${paymentData.payment_id}`;
+    if (paymentData.ok && paymentData.result) {
+        return {
+            statusCode: 200,
+            body: JSON.stringify({ invoice_url: paymentData.result.pay_url })
+        };
+    } else {
+        return {
+            statusCode: 400,
+            body: JSON.stringify({ error: 'Failed to create payment', details: paymentData })
+        };
     }
-
-    return {
-      statusCode: response.status,
-      body: JSON.stringify(paymentData)
-    };
   } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Failed to create payment' })
+      body: JSON.stringify({ error: 'Server error', details: error.message })
     };
   }
 };
