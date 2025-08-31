@@ -180,33 +180,17 @@ async function buyCoins() {
         pay_currency: "ton",
         order_id: `player123_${Date.now()}`,
         order_description: "In-game coins",
-        // The Crypto Pay API does not use these parameters, but we can leave them for consistency
         ipn_callback_url: "https://your-netlify-app-name.netlify.app/.netlify/functions/verify-payment",
         success_url: "https://your-netlify-app-name.netlify.app/success.html",
     };
-
     try {
-        const response = await fetch(CREATE_PAYMENT_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            alert(`HTTP Error: ${response.status} - ${errorText}`);
-            return;
-        }
-
+        const response = await fetch(CREATE_PAYMENT_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+        if (!response.ok) { const errorText = await response.text(); alert(`HTTP Error: ${response.status} - ${errorText}`); return; }
         const paymentData = await response.json();
-
-        // The Crypto Pay backend will return the URL here
+        alert('Success: Redirecting to payment URL...');
         window.location.href = paymentData.invoice_url;
-
     } catch (error) {
-        alert('Could not connect to the payment gateway.');
+        alert('CATCH: Could not connect to the payment gateway.');
     }
 }
 
