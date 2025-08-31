@@ -258,25 +258,14 @@ async function buyCoins(tonAmount, userId) {
       },
       body: JSON.stringify(data)
     });
-    const text = await response.text();
-    let paymentData = null;
-    try { paymentData = text ? JSON.parse(text) : null; } catch(_) { paymentData = { raw: text }; }
+
     if (!response.ok) {
-      const msg = paymentData && (paymentData.error || paymentData.message) ? (paymentData.error || paymentData.message) : (paymentData && paymentData.raw ? String(paymentData.raw).slice(0,500) : 'No details');
-      const full = `NOWPayments error: HTTP ${response.status} ${response.statusText} — ${msg}`;
-      console.error(full, paymentData);
-      alert(full);
-      return;
+      throw new Error(`HTTP Error! status: ${response.status}`);
     }
-    if (paymentData && paymentData.invoice_url) {
-      // Redirect the current page to the invoice URL (useful on mobile & required)
-      window.location.href = paymentData.invoice_url;
-    } else {
-      const detail = paymentData && (paymentData.error || paymentData.message) ? (paymentData.error || paymentData.message) : JSON.stringify(paymentData);
-      const full = `NOWPayments invalid response: ${detail}`;
-      console.error(full, paymentData);
-      alert(full);
-    }
+
+    const paymentData = await response.json();
+    console.log('Payment created successfully:', paymentData);
+    window.location.href = paymentData.invoice_url; // Opens the payment page
   } catch (error) {
     const msg = (error && (error.message || String(error))) || 'Unknown error';
     const full = `NOWPayments request failed: ${msg}`;
