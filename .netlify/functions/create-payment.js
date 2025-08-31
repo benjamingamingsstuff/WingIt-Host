@@ -21,6 +21,7 @@ exports.handler = async (event) => {
       order_description: data.order_description,
       ipn_callback_url: data.ipn_callback_url,
       success_url: data.success_url,
+      is_fixed_rate: false,
     };
 
     const response = await fetch(NOWPAYMENTS_API_URL, {
