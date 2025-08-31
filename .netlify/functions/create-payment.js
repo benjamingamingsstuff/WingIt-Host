@@ -24,9 +24,9 @@ exports.handler = async (event) => {
 
     const paymentData = await response.json();
 
+    // This is the correct logic for creating the URL. It uses the payment_id
     if (paymentData.payment_id) {
-        // This is the updated URL that includes the pay_currency
-        paymentData.invoice_url = `https://nowpayments.io/payment/${paymentData.payment_id}?pay_currency=${paymentData.pay_currency}`;
+        paymentData.invoice_url = `https://nowpayments.io/payment/?iid=${paymentData.payment_id}`;
     }
 
     return {
