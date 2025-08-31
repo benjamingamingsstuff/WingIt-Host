@@ -1,8 +1,7 @@
-// // File: .netlify/functions/create-payment.js
+// File: .netlify/functions/create-payment.js
 
 const fetch = require('node-fetch').default;
 
-// Get your API token from @CryptoBot from Netlify's environment variables
 const CRYPTO_PAY_API_KEY = process.env.CRYPTO_PAY_API_KEY;
 const CRYPTO_PAY_API_URL = 'https://pay.crypt.bot/api/createInvoice';
 
@@ -12,6 +11,9 @@ exports.handler = async (event) => {
   }
 
   const data = JSON.parse(event.body);
+
+  // ADD THIS LINE TO CHECK IF THE KEY IS BEING READ
+  console.log('API Key from environment variable:', CRYPTO_PAY_API_KEY);
 
   try {
     const requestBody = {
