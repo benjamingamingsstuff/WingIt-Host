@@ -169,10 +169,11 @@ function renderShopItems() {
   else { ui.spinBtn.disabled = false; ui.spinBtn.classList.remove("spin-disabled"); }
   addCryptoCoinPackButton();
 }
-// add payment endpoint constant for Crypto Pay integration
-const CREATE_PAYMENT_URL = "https://api.cryptobot.example/create_payment"; // <- replace with real endpoint
 
-// YOU SHOULD REPLACE YOUR OLD buyCoins FUNCTION WITH THIS NEW ONE
+// add payment endpoint for Netlify function integration
+const CREATE_PAYMENT_URL = "https://your-netlify-app-name.netlify.app/.netlify/functions/create-payment";
+
+// Replace old buyCoins implementation with new one that posts to the Netlify function
 async function buyCoins() {
     const data = {
         price_amount: 0.99,
@@ -184,13 +185,16 @@ async function buyCoins() {
         success_url: "https://your-netlify-app-name.netlify.app/success.html",
     };
     try {
-        const response = await fetch(CREATE_PAYMENT_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+        const response = await fetch(CREATE_PAYMENT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
         if (!response.ok) { const errorText = await response.text(); alert(`HTTP Error: ${response.status} - ${errorText}`); return; }
         const paymentData = await response.json();
-        alert('Success: Redirecting to payment URL...');
         window.location.href = paymentData.invoice_url;
     } catch (error) {
-        alert('CATCH: Could not connect to the payment gateway.');
+        alert('Could not connect to the payment gateway.');
     }
 }
 
