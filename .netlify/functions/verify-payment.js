@@ -1,54 +1,40 @@
-// File: verify-payment.js
+// File: .netlify/functions/verify-payment.js
 
-// You will need to install this library: npm install crypto
-const crypto = require('crypto');
+const fetch = require('node-fetch').default;
 
-// This key MUST be stored as a Netlify environment variable, NOT in the code.
-const IPN_SECRET_KEY = process.env.NOWPAYMENTS_IPN_SECRET;
+// Get your API token from @CryptoBot
+const CRYPTO_PAY_API_KEY = process.env.CRYPTO_PAY_API_KEY;
 
-exports.handler = async (event, context) => {
-  // Only accept POST requests
-  if (event.httpMethod !== 'POST') {
+exports.handler = async (event) => {
+    // The webhook from Crypto Pay will be a POST request
+    if (event.httpMethod !== 'POST') {
+        return { statusCode: 405, body: 'Method Not Allowed' };
+    }
+
+    const payload = JSON.parse(event.body);
+
+    // This is the data that Crypto Pay sends to your server
+    const invoice = payload.invoice;
+    
+    // We only want to process paid invoices
+    if (invoice && invoice.status === 'paid') {
+        const orderId = invoice.payload;
+        
+        // This is where you would update your user's account with the coins
+        // For example:
+        // await updateUserCoins(orderId);
+
+        console.log(`Payment successful for order ID: ${orderId}`);
+
+        // You must return a 200 OK status to let Crypto Pay know you received the webhook
+        return {
+            statusCode: 200,
+            body: 'OK'
+        };
+    }
+
     return {
-      statusCode: 405,
-      body: 'Method Not Allowed',
+        statusCode: 400,
+        body: 'Invalid request'
     };
-  }
-
-  // Get the signature from the request header
-  const signature = event.headers['x-nowpayments-sig'];
-  const body = JSON.parse(event.body);
-
-  // Recreate the signature on our side
-  const sortedBody = JSON.stringify(body, Object.keys(body).sort());
-  const hmac = crypto.createHmac('sha512', IPN_SECRET_KEY);
-  hmac.update(sortedBody);
-  const calculatedSignature = hmac.digest('hex');
-
-  // Verify the signature. This is the most important security check.
-  if (calculatedSignature !== signature) {
-    return {
-      statusCode: 403,
-      body: 'Invalid signature',
-    };
-  }
-
-  // Check the payment status
-  if (body.payment_status === 'finished') {
-    // The payment is complete and verified!
-    // This is where you would update your game's database.
-    console.log(`Payment confirmed for order ID: ${body.order_id}`);
-
-    // Return a success response to NOWPayments
-    return {
-      statusCode: 200,
-      body: 'Payment confirmed and credited.',
-    };
-  } else {
-    // Payment is not finished, but the webhook is valid
-    console.log(`Payment status update for order ID ${body.order_id}: ${body.payment_status}`);
-    return {
-      statusCode: 200,
-      body: `Status updated: ${body.payment_status}`,
-    };
-  }
+};
