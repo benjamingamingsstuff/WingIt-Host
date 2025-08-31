@@ -1,4 +1,30 @@
 // File: .netlify/functions/create-payment.js
+// File: game.js
+
+// Add this line to the very top of the file
+console.log('game.js is running');
+
+const CREATE_PAYMENT_URL = "https://your-netlify-app-name.netlify.app/.netlify/functions/create-payment";
+
+async function buyCoins() {
+    // Add this line to the very top of the function
+    console.log('buyCoins function triggered');
+
+    const data = {
+        price_amount: 0.99,
+        price_currency: "usd",
+        pay_currency: "ton",
+        order_id: `player123_${Date.now()}`,
+        order_description: "In-game coins",
+        // The Crypto Pay API does not use these parameters, but we can leave them for consistency
+        ipn_callback_url: "https://your-netlify-app-name.netlify.app/.netlify/functions/verify-payment",
+        success_url: "https://your-netlify-app-name.netlify.app/success.html",
+    };
+
+    // ... rest of the code is the same ...
+}
+
+// ... rest of the file is the same ...
 
 import fetch from 'node-fetch';
 
