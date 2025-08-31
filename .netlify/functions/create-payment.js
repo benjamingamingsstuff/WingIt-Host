@@ -1,6 +1,7 @@
 // File: .netlify/functions/create-payment.js
 
-const fetch = require('node-fetch');
+const fetch = require('node-fetch').default;
+
 
 // This key MUST be stored as a Netlify environment variable
 const NOWPAYMENTS_API_KEY = process.env.NOWPAYMENTS_API_KEY;
