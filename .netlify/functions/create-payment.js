@@ -1,4 +1,4 @@
-// // File: .netlify/functions/create-payment.js
+// File: .netlify/functions/create-payment.js
 
 const fetch = require('node-fetch').default;
 
