@@ -238,8 +238,13 @@ renderShopItems();
 const NOWPAYMENTS_API_KEY = 'F1TH99H-B5FMYMP-P0TQZQB-ZRQ77AK';
 const NOWPAYMENTS_API_URL = 'https://api.nowpayments.io/v1/payment';
 const ipnCallbackURL = 'https://deft-pothos-3ce007.netlify.app/.netlify/functions/verify-payment';
+let isProcessing = false; // prevent double submissions
 
 async function buyCoins(tonAmount, userId) {
+  if (isProcessing) return;
+  isProcessing = true;
+  const button = document.getElementById('buy-coins-button');
+  if (button) button.disabled = true;
   const data = {
     price_amount: tonAmount,
     price_currency: 'ton',
@@ -248,38 +253,30 @@ async function buyCoins(tonAmount, userId) {
     order_description: 'In-game coins',
     ipn_callback_url: ipnCallbackURL
   };
-
   try {
     const response = await fetch(NOWPAYMENTS_API_URL, {
       method: 'POST',
-      headers: {
-        'x-api-key': NOWPAYMENTS_API_KEY,
-        'Content-Type': 'application/json'
-      },
+      headers: { 'x-api-key': NOWPAYMENTS_API_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
-
-    // Check if the response was successful (status code 200-299)
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('HTTP Error:', response.status, errorText);
-      alert('Could not start payment. Please check your API key and try again.');
-      return; // Stop execution here
+      alert(`HTTP Error: ${response.status} - ${errorText}`);
+      return;
     }
-
     const paymentData = await response.json();
-    // Use the absolute URL directly from the API response
     window.location.href = paymentData.invoice_url;
-
-  } catch (error) {
-    console.error('Network Error:', error);
+  } catch (err) {
     alert('Could not connect to the payment gateway.');
+  } finally {
+    if (button) button.disabled = false;
+    isProcessing = false;
   }
 }
 
-// Wire the Buy Coins button directly
-document.getElementById('buy-coins-button').addEventListener('click', () => {
-  buyCoins(0.3153, 'player123');
+document.addEventListener('DOMContentLoaded', () => {
+  const button = document.getElementById('buy-coins-button');
+  if (button) button.addEventListener('click', () => buyCoins(0.3153, 'player123'));
 });
 
 function start() {
