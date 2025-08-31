@@ -12,9 +12,6 @@ exports.handler = async (event) => {
 
   const data = JSON.parse(event.body);
 
-  // This is the new line we need to check
-  console.log('Data received from game.js:', data);
-
   try {
     const response = await fetch(NOWPAYMENTS_API_URL, {
       method: 'POST',
@@ -27,14 +24,16 @@ exports.handler = async (event) => {
 
     const paymentData = await response.json();
 
-    console.log('NOWPayments API Response:', paymentData);
+    // Here we check the response for the payment_id and construct the URL
+    if (paymentData.payment_id) {
+        paymentData.invoice_url = `https://nowpayments.io/payment/${paymentData.payment_id}`;
+    }
 
     return {
       statusCode: response.status,
       body: JSON.stringify(paymentData)
     };
   } catch (error) {
-    console.error('Fetch error:', error);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: 'Failed to create payment' })
