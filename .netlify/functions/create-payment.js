@@ -13,11 +13,10 @@ exports.handler = async (event) => {
   const data = JSON.parse(event.body);
 
   try {
-    const requestBody = {
+    const payload = {
       price_amount: data.price_amount,
       price_currency: data.price_currency,
-      // Ensure that 'ton' is a string.
-      pay_currency: 'ton',
+      pay_currency: data.pay_currency,
       order_id: data.order_id,
       order_description: data.order_description,
       ipn_callback_url: data.ipn_callback_url,
@@ -30,7 +29,7 @@ exports.handler = async (event) => {
         'x-api-key': NOWPAYMENTS_API_KEY,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify(payload)
     });
 
     const paymentData = await response.json();
