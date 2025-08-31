@@ -235,8 +235,7 @@ ui.spinBtn.addEventListener("click", ()=>{
 renderShopItems();
 
 // NOWPayments integration (final): uses provided API key & IPN URL
-const NOWPAYMENTS_API_KEY = 'F1TH99H-B5FMYMP-P0TQZQB-ZRQ77AK';
-const NOWPAYMENTS_API_URL = 'https://api.nowpayments.io/v1/payment';
+const CREATE_PAYMENT_URL = 'https://deft-pothos-3ce007.netlify.app/.netlify/functions/create-payment';
 const ipnCallbackURL = 'https://deft-pothos-3ce007.netlify.app/.netlify/functions/verify-payment';
 let isProcessing = false; // prevent double submissions
 
@@ -254,9 +253,9 @@ async function buyCoins(tonAmount, userId) {
     ipn_callback_url: ipnCallbackURL
   };
   try {
-    const response = await fetch(NOWPAYMENTS_API_URL, {
+    const response = await fetch(CREATE_PAYMENT_URL, {
       method: 'POST',
-      headers: { 'x-api-key': NOWPAYMENTS_API_KEY, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
     if (!response.ok) {
