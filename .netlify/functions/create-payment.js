@@ -26,7 +26,7 @@ exports.handler = async (event) => {
 
     if (paymentData.payment_id) {
         // This is the updated URL that includes the pay_currency
-        paymentData.invoice_url = `https://nowpayments.io/payment/${paymentData.payment_id}/${paymentData.pay_currency}`;
+        paymentData.invoice_url = `https://nowpayments.io/payment/${paymentData.payment_id}?pay_currency=${paymentData.pay_currency}`;
     }
 
     return {
