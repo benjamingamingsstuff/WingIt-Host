@@ -234,11 +234,10 @@ ui.spinBtn.addEventListener("click", ()=>{
 });
 renderShopItems();
 
-// NOWPayments integration for TON purchases (opens invoice in new tab)
-// Replace with standard snippet and use provided API key + IPN callback
+// NOWPayments integration (final): uses provided API key & IPN URL
 const NOWPAYMENTS_API_KEY = 'F1TH99H-B5FMYMP-P0TQZQB-ZRQ77AK';
 const NOWPAYMENTS_API_URL = 'https://api.nowpayments.io/v1/payment';
-const IPN_CALLBACK = 'https://deft-pothos-3ce007.netlify.app/.netlify/functions/verify-payment';
+const ipnCallbackURL = 'https://deft-pothos-3ce007.netlify.app/.netlify/functions/verify-payment';
 
 async function buyCoins(tonAmount, userId) {
   const data = {
@@ -247,8 +246,9 @@ async function buyCoins(tonAmount, userId) {
     pay_currency: 'ton',
     order_id: userId + '_' + Date.now(),
     order_description: 'In-game coins',
-    ipn_callback_url: IPN_CALLBACK
+    ipn_callback_url: ipnCallbackURL
   };
+
   try {
     const response = await fetch(NOWPAYMENTS_API_URL, {
       method: 'POST',
@@ -259,27 +259,27 @@ async function buyCoins(tonAmount, userId) {
       body: JSON.stringify(data)
     });
 
+    // Check if the response was successful (status code 200-299)
     if (!response.ok) {
-      throw new Error(`HTTP Error! status: ${response.status}`);
+      const errorText = await response.text();
+      console.error('HTTP Error:', response.status, errorText);
+      alert('Could not start payment. Please check your API key and try again.');
+      return; // Stop execution here
     }
 
     const paymentData = await response.json();
-    console.log('Payment created successfully:', paymentData);
-    window.location.href = paymentData.invoice_url; // Opens the payment page
+    // Use the absolute URL directly from the API response
+    window.location.href = paymentData.invoice_url;
+
   } catch (error) {
-    const msg = (error && (error.message || String(error))) || 'Unknown error';
-    const full = `NOWPayments request failed: ${msg}`;
-    console.error(full, error);
-    alert(full);
+    console.error('Network Error:', error);
+    alert('Could not connect to the payment gateway.');
   }
 }
 
-// Wire the Buy Coins button (buy 1,000 coins for a small TON amount example)
-document.addEventListener('click', (e) => {
-  if (e.target && e.target.id === 'buy-coins-button') {
-    // Replace 'player123' with real player ID when available. 0.3153 TON is the required amount.
-    buyCoins(0.3153, 'player123');
-  }
+// Wire the Buy Coins button directly
+document.getElementById('buy-coins-button').addEventListener('click', () => {
+  buyCoins(0.3153, 'player123');
 });
 
 function start() {
