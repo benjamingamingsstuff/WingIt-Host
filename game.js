@@ -235,46 +235,14 @@ ui.spinBtn.addEventListener("click", ()=>{
 renderShopItems();
 
 // Replace the payWithStars implementation
-function waitForTelegramAPI(callback) {
-  const checkInterval = setInterval(() => {
-    if (window.Telegram && window.Telegram.WebApp) {
-      clearInterval(checkInterval);
-      callback();
-    }
-  }, 100);
-}
-
 function payWithStars() {
-  if (window.Telegram && window.Telegram.WebApp) {
-    const botName = 'wing_it_game_bot';
-
-    const invoiceData = {
-      title: 'Wing It! Game Coins',
-      description: '1,000 in-game coins to buy birds and enter Tournaments',
-      payload: 'purchase_coins_10',
-      provider_token: '',
-      currency: 'XTR',
-      prices: [{
-        label: '10 Stars',
-        amount: 10
-      }]
-    };
-
-    // Construct the URL manually using the t.me format.
-    const invoiceUrl = `https://t.me/${botName}/?startattach=1&invoice=${encodeURIComponent(JSON.stringify(invoiceData))}`;
-
-    Telegram.WebApp.openInvoice(invoiceUrl, (status) => {
-      if (status === 'paid') {
-        Telegram.WebApp.showAlert('Payment successful! Your coins have been added.');
-      } else if (status === 'cancelled') {
-        Telegram.WebApp.showAlert('Payment was cancelled.');
-      } else if (status === 'failed') {
-        Telegram.WebApp.showAlert('Payment failed. Please try again.');
-      }
-    });
-
-  } else {
-    console.error('Telegram Web App API not found.');
+  const invoiceUrl = 'https://t.me/wing_it_game_bot/?startattach=1&invoice={"title":"1,000 Coins - Wing It!","description":"1,000 in-game coins to buy birds","payload":"Coins_1000","provider_token":"","currency":"XTR","prices":[{"label":"10 Stars","amount":10}]}';
+  try {
+    // Direct redirect to the invoice URL
+    window.location.href = invoiceUrl;
+  } catch (err) {
+    console.error("Redirect failed:", err);
+    alert("Unable to open payment link. Please try again.");
   }
 }
 
