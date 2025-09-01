@@ -245,27 +245,37 @@ function waitForTelegramAPI(callback) {
 }
 
 function payWithStars() {
-  waitForTelegramAPI(() => {
-    const paymentData = {
-      title: '1,000 Coins - Wing It!',
-      description: 'Use coins to buy birds and enter Tournaments',
+  if (window.Telegram && window.Telegram.WebApp) {
+    const botName = 'wing_it_game_bot';
+
+    const invoiceData = {
+      title: 'Wing It! Game Coins',
+      description: '1,000 in-game coins to buy birds and enter Tournaments',
       payload: 'purchase_coins_10',
       provider_token: '',
       currency: 'XTR',
-      prices: [{ label: '10 Stars', amount: 10 }]
+      prices: [{
+        label: '10 Stars',
+        amount: 10
+      }]
     };
 
-    Telegram.WebApp.openInvoice(paymentData, (status) => {
+    // Construct the URL manually using the t.me format.
+    const invoiceUrl = `https://t.me/${botName}/?startattach=1&invoice=${encodeURIComponent(JSON.stringify(invoiceData))}`;
+
+    Telegram.WebApp.openInvoice(invoiceUrl, (status) => {
       if (status === 'paid') {
-        console.log('Payment was successful!');
-        // Update the game state here
+        Telegram.WebApp.showAlert('Payment successful! Your coins have been added.');
       } else if (status === 'cancelled') {
-        console.log('Payment was cancelled.');
+        Telegram.WebApp.showAlert('Payment was cancelled.');
       } else if (status === 'failed') {
-        console.error('Payment failed.');
+        Telegram.WebApp.showAlert('Payment failed. Please try again.');
       }
     });
-  });
+
+  } else {
+    console.error('Telegram Web App API not found.');
+  }
 }
 
 // Wire the new button (safe if element exists)
