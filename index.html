@@ -40,20 +40,18 @@
       </div>
       <div id="shopPanel" hidden>
         <p style="margin:8px 0 6px;font-weight:700">Shop</p>
-        <!-- layout: left column for coin actions, right column for wheel -->
-        <div style="display:flex;gap:12px;justify-content:center;align-items:flex-start;margin-bottom:8px;flex-wrap:wrap">
-          <div id="coinActions" style="display:flex;flex-direction:column;align-items:center;gap:8px;min-width:120px">
-            <div id="coinBox" style="font-weight:700;display:flex;align-items:center;gap:8px">
-              <img src="/Coin.png" alt="Coins" style="width:22px;height:22px;image-rendering:pixelated">
-              <span>Coins: <span id="coins">0</span></span>
-            </div>
-            <button id="spinBtn" class="opt">Spin Wheel</button>
-            <!-- dedicated area for the crypto purchase pack (injected by JS) -->
-            <div id="coinPurchaseArea" aria-live="polite" style="display:flex;flex-direction:column;gap:8px;align-items:center"></div>
+        <div style="display:flex;gap:10px;justify-content:center;align-items:center;margin-bottom:8px">
+          <div id="coinBox" style="font-weight:700;display:flex;align-items:center;gap:8px">
+            <img src="/Coin.png" alt="Coins" style="width:22px;height:22px;image-rendering:pixelated">
+            <span>Coins: <span id="coins">0</span></span>
           </div>
-          <div id="wheelContainer" style="display:flex;justify-content:center;align-items:center;margin-bottom:8px;pointer-events:auto">
-            <div id="wheel" role="img" aria-label="Spin wheel"></div>
-          </div>
+          <button id="spinBtn" class="opt">Spin Wheel</button>
+        </div>
+        <div id="wheelContainer" style="display:flex;justify-content:center;align-items:center;margin-bottom:8px;pointer-events:auto">
+          <div id="wheel" role="img" aria-label="Spin wheel"></div>
+        </div>
+        <div style="display:flex;justify-content:center;margin-bottom:8px">
+          <button id="buyStarsBtn" class="opt" aria-label="buy 1,000 coins (10 Stars)">buy 1,000 coins (10 Stars)</button>
         </div>
         <div id="shopItems" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
           <!-- shop items injected by JS -->

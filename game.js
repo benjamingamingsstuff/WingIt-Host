@@ -167,71 +167,7 @@ function renderShopItems() {
   // disable spin button if on cooldown
   if (!spinAvailable()) { ui.spinBtn.disabled = true; ui.spinBtn.classList.add("spin-disabled"); }
   else { ui.spinBtn.disabled = false; ui.spinBtn.classList.remove("spin-disabled"); }
-  addCryptoCoinPackButton();
 }
-
-// add payment endpoint for Netlify function integration
-const CREATE_PAYMENT_URL = "https://your-netlify-app-name.netlify.app/.netlify/functions/create-payment";
-
-// Replace old buyCoins implementation with new one that posts to the Netlify function
-async function buyCoins() {
-    // This will alert if the function is being called
-    alert('1. buyCoins function triggered');
-
-    try {
-        // This will alert if the fetch request is being made
-        alert('2. Sending fetch request...');
-
-        const response = await fetch(CREATE_PAYMENT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                price_amount: 0.99,
-                order_description: "In-game coins",
-                order_id: `player123_${Date.now()}`
-            })
-        });
-
-        // This will alert if the fetch request got a response
-        alert(`3. Response status: ${response.status}`);
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            alert(`4. HTTP Error: ${response.status} - ${errorText}`);
-            return;
-        }
-
-        const paymentData = await response.json();
-
-        // This will alert if the payment URL was received
-        alert('5. Redirecting to payment URL...');
-        window.location.href = paymentData.invoice_url;
-
-    } catch (error) {
-        // This will alert if the fetch request failed completely
-        alert('CATCH: Could not connect to the payment gateway.');
-    }
-}
-
-// inject a crypto coin-pack purchase option into the shop UI
-function addCryptoCoinPackButton() {
-  // avoid duplicate
-  if (document.getElementById("buy1000CryptoBtn")) return;
-  const pack = document.createElement("div");
-  pack.className = "shop-item";
-  pack.style.minWidth = "120px";
-  pack.innerHTML = `<div style="font-weight:700">1000 Coins</div><div style="display:flex;align-items:center;gap:6px;"><span>$0.99</span><img src="/Coin.png" alt="coin" style="width:18px;height:18px;image-rendering:pixelated"></div>`;
-  const btn = document.createElement("button");
-  btn.id = "buy1000CryptoBtn";
-  btn.textContent = "Buy with Crypto";
-  btn.addEventListener("click", buyCoins);
-  pack.appendChild(btn);
-  // place the pack into the left-side coin actions area so it appears to the left of the wheel
-  const area = document.getElementById("coinPurchaseArea");
-  if (area) area.appendChild(pack);
-  else ui.shopItems.appendChild(pack); // fallback
-}
-
 function buyItem(item) {
   if (store.coins >= item.price) {
     store.coins -= item.price; store.owned.add(item.id); saveStore(); renderShopItems(); renderBirds();
@@ -297,6 +233,64 @@ ui.spinBtn.addEventListener("click", ()=>{
   }, 2500);
 });
 renderShopItems();
+
+// Add Telegram Stars payment integration and wire the shop button
+function payWithStars() {
+  // Check if the Telegram Web App API is available
+  if (window.Telegram && window.Telegram.WebApp) {
+    // The payload is a unique identifier for the purchase.
+    // Use it to track what the user is buying.
+    const payload = 'purchase_item_123';
+
+    // The payment data that will be sent to the Telegram API.
+    // This example uses a single, predefined item.
+    const paymentData = {
+      title: 'Awesome Game Item',
+      description: 'Unlock this exclusive item in your game!',
+      payload: payload,
+      provider_token: '', // Leave this empty for Stars
+      currency: 'XTR', // Use 'XTR' for Telegram Stars
+      prices: [{
+        label: '10 Stars',
+        amount: 10 // The amount in Stars
+      }],
+      start_parameter: 'item_123' // An optional deep-linking parameter
+    };
+
+    // Use the Telegram Web App's `openInvoice` method to start the payment flow.
+    // The function returns a promise that resolves with the payment result.
+    Telegram.WebApp.openInvoice(paymentData, (status) => {
+      // The `status` will indicate the result of the payment process.
+      if (status === 'paid') {
+        // Payment was successful.
+        console.log('Payment was successful!');
+        // Now you can update the game state, give the user the item, etc.
+        // It's a good practice to verify this on the server side as well.
+        // Grant the coins locally as immediate feedback (server validation recommended)
+        store.coins += 1000;
+        saveStore();
+        renderShopItems();
+      } else if (status === 'cancelled') {
+        // Payment was canceled by the user.
+        console.log('Payment was cancelled.');
+      } else if (status === 'pending') {
+        // Payment is pending.
+        console.log('Payment is pending.');
+      } else if (status === 'failed') {
+        // Payment failed for some reason.
+        console.error('Payment failed.');
+      }
+    });
+
+  } else {
+    console.error('Telegram Web App API not found.');
+    // Handle the case where the game is not running in the Telegram app.
+  }
+}
+
+// Wire the new button (safe if element exists)
+const buyStarsBtn = document.getElementById("buyStarsBtn");
+if (buyStarsBtn) buyStarsBtn.addEventListener("click", payWithStars);
 
 function start() {
   // hide menus, reset world and switch to playing mode
