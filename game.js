@@ -234,50 +234,37 @@ ui.spinBtn.addEventListener("click", ()=>{
 });
 renderShopItems();
 
-// Add Telegram Stars payment integration and wire the shop button
+// Replace the payWithStars implementation
 function payWithStars() {
   // Check if the Telegram Web App API is available
   if (window.Telegram && window.Telegram.WebApp) {
     // The payload is a unique identifier for the purchase.
-    // Use it to track what the user is buying.
-    const payload = 'purchase_item_123';
+    const payload = 'purchase_coins_10';
 
-    // The payment data that will be sent to the Telegram API.
-    // This example uses a single, predefined item.
+    // The updated payment data to be sent to the Telegram API.
     const paymentData = {
-      title: 'Awesome Game Item',
-      description: 'Unlock this exclusive item in your game!',
+      title: '1,000 Coins - Wing It!',
+      description: 'Use coins to buy birds and enter Tournaments',
       payload: payload,
       provider_token: '', // Leave this empty for Stars
       currency: 'XTR', // Use 'XTR' for Telegram Stars
       prices: [{
         label: '10 Stars',
         amount: 10 // The amount in Stars
-      }],
-      start_parameter: 'item_123' // An optional deep-linking parameter
+      }]
     };
 
     // Use the Telegram Web App's `openInvoice` method to start the payment flow.
-    // The function returns a promise that resolves with the payment result.
     Telegram.WebApp.openInvoice(paymentData, (status) => {
       // The `status` will indicate the result of the payment process.
       if (status === 'paid') {
-        // Payment was successful.
         console.log('Payment was successful!');
-        // Now you can update the game state, give the user the item, etc.
-        // It's a good practice to verify this on the server side as well.
-        // Grant the coins locally as immediate feedback (server validation recommended)
-        store.coins += 1000;
-        saveStore();
-        renderShopItems();
+        // Update the game state to give the user their coins.
       } else if (status === 'cancelled') {
-        // Payment was canceled by the user.
         console.log('Payment was cancelled.');
       } else if (status === 'pending') {
-        // Payment is pending.
         console.log('Payment is pending.');
       } else if (status === 'failed') {
-        // Payment failed for some reason.
         console.error('Payment failed.');
       }
     });

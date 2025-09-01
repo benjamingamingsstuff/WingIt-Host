@@ -21,7 +21,6 @@
   <script src="//cdn.jsdelivr.net/npm/eruda"></script>
   <script>eruda.init();</script>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script type="module" src="game.js"></script>
 </head>
 <body>
   <canvas id="game"></canvas>
@@ -84,5 +83,8 @@
       </div>
     </div>
   </div>
+
+  <!-- load game after DOM is parsed so elements (canvas, UI) exist -->
+  <script type="module" src="game.js"></script>
 </body>
 </html>
