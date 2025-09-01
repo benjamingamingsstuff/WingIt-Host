@@ -235,44 +235,37 @@ ui.spinBtn.addEventListener("click", ()=>{
 renderShopItems();
 
 // Replace the payWithStars implementation
-function payWithStars() {
-  // Check if the Telegram Web App API is available
-  if (window.Telegram && window.Telegram.WebApp) {
-    // The payload is a unique identifier for the purchase.
-    const payload = 'purchase_coins_10';
+function waitForTelegramAPI(callback) {
+  const checkInterval = setInterval(() => {
+    if (window.Telegram && window.Telegram.WebApp) {
+      clearInterval(checkInterval);
+      callback();
+    }
+  }, 100);
+}
 
-    // The updated payment data to be sent to the Telegram API.
+function payWithStars() {
+  waitForTelegramAPI(() => {
     const paymentData = {
       title: '1,000 Coins - Wing It!',
       description: 'Use coins to buy birds and enter Tournaments',
-      payload: payload,
-      provider_token: '', // Leave this empty for Stars
-      currency: 'XTR', // Use 'XTR' for Telegram Stars
-      prices: [{
-        label: '10 Stars',
-        amount: 10 // The amount in Stars
-      }]
+      payload: 'purchase_coins_10',
+      provider_token: '',
+      currency: 'XTR',
+      prices: [{ label: '10 Stars', amount: 10 }]
     };
 
-    // Use the Telegram Web App's `openInvoice` method to start the payment flow.
     Telegram.WebApp.openInvoice(paymentData, (status) => {
-      // The `status` will indicate the result of the payment process.
       if (status === 'paid') {
         console.log('Payment was successful!');
-        // Update the game state to give the user their coins.
+        // Update the game state here
       } else if (status === 'cancelled') {
         console.log('Payment was cancelled.');
-      } else if (status === 'pending') {
-        console.log('Payment is pending.');
       } else if (status === 'failed') {
         console.error('Payment failed.');
       }
     });
-
-  } else {
-    console.error('Telegram Web App API not found.');
-    // Handle the case where the game is not running in the Telegram app.
-  }
+  });
 }
 
 // Wire the new button (safe if element exists)
