@@ -4,7 +4,7 @@
   "description": "Functions for the Wing It! Web3 Game",
   "dependencies": {
     "node-fetch": "^3.3.2",
-    "crypto": "^1.0.1"
+    "crypto": "^1.0.1",
     "stripe": "^14.0.0" 
      },
   "engines": {
